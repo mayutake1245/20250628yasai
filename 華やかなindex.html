@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>寒色系の華やかなテストサイト</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="particles-container" id="particles"></div>
+    
+    <header class="header">
+        <nav class="nav">
+            <div class="nav-brand">
+                <i class="fas fa-snowflake"></i>
+                <span>寒色系サイト</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="#home" class="nav-link">ホーム</a></li>
+                <li><a href="#features" class="nav-link">機能</a></li>
+                <li><a href="#gallery" class="nav-link">ギャラリー</a></li>
+                <li><a href="#contact" class="nav-link">お問い合わせ</a></li>
+            </ul>
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section id="home" class="hero">
+            <div class="hero-content">
+                <h1 class="hero-title">
+                    <span class="gradient-text">寒色系の</span>
+                    <br>華やかなテストサイトへようこそ
+                </h1>
+                <p class="hero-subtitle">美しい寒色のアニメーションとモダンなデザインで作られた特別な体験</p>
+                <div class="hero-buttons">
+                    <button class="btn btn-primary" onclick="startAnimation()">
+                        <i class="fas fa-magic"></i>
+                        寒色マジック開始
+                    </button>
+                    <button class="btn btn-secondary" onclick="showNotification()">
+                        <i class="fas fa-bell"></i>
+                        通知
+                    </button>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <div class="floating-elements">
+                    <div class="floating-element" data-speed="2">
+                        <i class="fas fa-snowflake"></i>
+                    </div>
+                    <div class="floating-element" data-speed="1.5">
+                        <i class="fas fa-icicles"></i>
+                    </div>
+                    <div class="floating-element" data-speed="3">
+                        <i class="fas fa-gem"></i>
+                    </div>
+                    <div class="floating-element" data-speed="2.5">
+                        <i class="fas fa-wind"></i>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="features" class="features">
+            <div class="container">
+                <h2 class="section-title">素晴らしい機能</h2>
+                <div class="features-grid">
+                    <div class="feature-card" data-aos="fade-up">
+                        <div class="feature-icon">
+                            <i class="fas fa-palette"></i>
+                        </div>
+                        <h3>寒色系デザイン</h3>
+                        <p>美しい寒色系のカラーパレットで、落ち着いた上品な魅力を提供します。</p>
+                    </div>
+                    <div class="feature-card" data-aos="fade-up" data-aos-delay="200">
+                        <div class="feature-icon">
+                            <i class="fas fa-magic"></i>
+                        </div>
+                        <h3>寒色アニメーション</h3>
+                        <p>滑らかで魅力的な寒色系アニメーションで、涼やかな体験を提供します。</p>
+                    </div>
+                    <div class="feature-card" data-aos="fade-up" data-aos-delay="400">
+                        <div class="feature-icon">
+                            <i class="fas fa-mobile-alt"></i>
+                        </div>
+                        <h3>レスポンシブ</h3>
+                        <p>すべてのデバイスで完璧に表示される寒色系のレスポンシブデザインです。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="gallery" class="gallery">
+            <div class="container">
+                <h2 class="section-title">寒色系ギャラリー</h2>
+                <div class="gallery-grid">
+                    <div class="gallery-item" onclick="openModal(this)">
+                        <div class="gallery-content">
+                            <i class="fas fa-image"></i>
+                            <h3>寒色系画像 1</h3>
+                        </div>
+                    </div>
+                    <div class="gallery-item" onclick="openModal(this)">
+                        <div class="gallery-content">
+                            <i class="fas fa-image"></i>
+                            <h3>寒色系画像 2</h3>
+                        </div>
+                    </div>
+                    <div class="gallery-item" onclick="openModal(this)">
+                        <div class="gallery-content">
+                            <i class="fas fa-image"></i>
+                            <h3>寒色系画像 3</h3>
+                        </div>
+                    </div>
+                    <div class="gallery-item" onclick="openModal(this)">
+                        <div class="gallery-content">
+                            <i class="fas fa-image"></i>
+                            <h3>寒色系画像 4</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="contact" class="contact">
+            <div class="container">
+                <h2 class="section-title">お問い合わせ</h2>
+                <div class="contact-content">
+                    <form class="contact-form" onsubmit="handleSubmit(event)">
+                        <div class="form-group">
+                            <input type="text" id="name" required>
+                            <label for="name">お名前</label>
+                        </div>
+                        <div class="form-group">
+                            <input type="email" id="email" required>
+                            <label for="email">メールアドレス</label>
+                        </div>
+                        <div class="form-group">
+                            <textarea id="message" rows="5" required></textarea>
+                            <label for="message">メッセージ</label>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i>
+                            送信
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 寒色系の華やかなテストサイト. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Modal -->
+    <div id="modal" class="modal" onclick="closeModal()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <div class="modal-body">
+                <h2 id="modal-title">モーダルタイトル</h2>
+                <p id="modal-description">モーダルの説明文がここに表示されます。</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html> 

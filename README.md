@@ -272,3 +272,9 @@ Supabaseで以下のテーブルを作成：
 ---
 
 **家庭菜園ガイド・交流サイト** - 初心者から上級者まで楽しめる野菜コミュニティ 🥕 
+
+# パッケージ追加コマンド例（開発者向け）
+```bash
+pnpm add next@14.2.30 react react-dom tailwindcss@3.4.17 @tanstack/react-query@5.80.7 zustand@5.0.5 @hookform/resolvers@3.3.4 react-hook-form@7.58.1 zod@3.25.67 lucide-react@0.517.0 sonner@2.0.5 shadcn/ui
+pnpm add -D typescript@5.4.5
+``` 
