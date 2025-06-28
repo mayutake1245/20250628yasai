@@ -330,4 +330,399 @@ window.startAnimation = startAnimation;
 window.showNotification = showNotification;
 window.openModal = openModal;
 window.closeModal = closeModal;
-window.handleSubmit = handleSubmit; 
+window.handleSubmit = handleSubmit;
+
+// 野菜交流サイトのデータ管理
+class VegetableCommunity {
+    constructor() {
+        this.posts = JSON.parse(localStorage.getItem('vegetableCommunityPosts')) || [];
+        this.currentSort = 'date';
+        this.categories = {
+            tomato: { name: 'トマト', emoji: '🍅', color: '#FF6347' },
+            carrot: { name: 'にんじん', emoji: '🥕', color: '#FF8C00' },
+            lettuce: { name: 'レタス', emoji: '🥬', color: '#90EE90' },
+            cucumber: { name: 'きゅうり', emoji: '🥒', color: '#32CD32' },
+            broccoli: { name: 'ブロッコリー', emoji: '🥦', color: '#228B22' },
+            pepper: { name: 'ピーマン', emoji: '🫑', color: '#FF4500' },
+            onion: { name: 'たまねぎ', emoji: '🧅', color: '#FFD700' },
+            potato: { name: 'じゃがいも', emoji: '🥔', color: '#DEB887' },
+            other: { name: 'その他', emoji: '🌱', color: '#98FB98' }
+        };
+        this.init();
+    }
+
+    init() {
+        this.renderPosts();
+        this.renderStats();
+        this.setupEventListeners();
+    }
+
+    // 投稿を追加
+    addPost(name, title, category, message) {
+        const post = {
+            id: Date.now(),
+            name: name.trim(),
+            title: title.trim(),
+            category: category,
+            message: message.trim(),
+            date: new Date().toISOString(),
+            timestamp: Date.now()
+        };
+
+        this.posts.unshift(post); // 最新の投稿を先頭に追加
+        this.saveToLocalStorage();
+        this.renderPosts();
+        this.renderStats();
+        this.showNotification(`🥕 ${this.categories[category].name}の投稿が追加されました！`, 'success');
+    }
+
+    // 投稿を削除
+    deletePost(id) {
+        const post = this.posts.find(p => p.id === id);
+        this.posts = this.posts.filter(post => post.id !== id);
+        this.saveToLocalStorage();
+        this.renderPosts();
+        this.renderStats();
+        this.showNotification(`🗑️ ${post.title}を削除しました`, 'info');
+    }
+
+    // すべての投稿を削除
+    clearAllPosts() {
+        this.posts = [];
+        this.saveToLocalStorage();
+        this.renderPosts();
+        this.renderStats();
+        this.showNotification('🧹 すべての投稿を削除しました', 'info');
+    }
+
+    // 投稿をソート
+    sortPosts(type) {
+        this.currentSort = type;
+        
+        switch (type) {
+            case 'date':
+                this.posts.sort((a, b) => b.timestamp - a.timestamp);
+                break;
+            case 'name':
+                this.posts.sort((a, b) => a.name.localeCompare(b.name, 'ja'));
+                break;
+            case 'category':
+                this.posts.sort((a, b) => this.categories[a.category].name.localeCompare(this.categories[b.category].name, 'ja'));
+                break;
+        }
+        
+        this.renderPosts();
+        this.showNotification(`📊 ${type === 'date' ? '日時' : type === 'name' ? '名前' : 'カテゴリー'}順でソートしました`, 'info');
+    }
+
+    // 統計を表示
+    renderStats() {
+        const statsGrid = document.getElementById('statsGrid');
+        
+        // 総投稿数
+        const totalPosts = this.posts.length;
+        
+        // カテゴリー別投稿数
+        const categoryStats = {};
+        Object.keys(this.categories).forEach(category => {
+            categoryStats[category] = this.posts.filter(post => post.category === category).length;
+        });
+        
+        // 最も人気のカテゴリー
+        const popularCategory = Object.keys(categoryStats).reduce((a, b) => 
+            categoryStats[a] > categoryStats[b] ? a : b
+        );
+        
+        // 今日の投稿数
+        const today = new Date().toDateString();
+        const todayPosts = this.posts.filter(post => 
+            new Date(post.date).toDateString() === today
+        ).length;
+
+        const statsHTML = `
+            <div class="stat-card">
+                <div class="stat-icon">📝</div>
+                <div class="stat-number">${totalPosts}</div>
+                <div class="stat-label">総投稿数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">${this.categories[popularCategory].emoji}</div>
+                <div class="stat-number">${categoryStats[popularCategory]}</div>
+                <div class="stat-label">${this.categories[popularCategory].name}の投稿</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📅</div>
+                <div class="stat-number">${todayPosts}</div>
+                <div class="stat-label">今日の投稿</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">👥</div>
+                <div class="stat-number">${new Set(this.posts.map(post => post.name)).size}</div>
+                <div class="stat-label">参加者数</div>
+            </div>
+        `;
+        
+        statsGrid.innerHTML = statsHTML;
+    }
+
+    // 投稿を表示
+    renderPosts() {
+        const container = document.getElementById('postsContainer');
+        const noPosts = document.getElementById('noPosts');
+
+        if (this.posts.length === 0) {
+            container.innerHTML = '';
+            noPosts.style.display = 'block';
+            return;
+        }
+
+        noPosts.style.display = 'none';
+        container.innerHTML = this.posts.map(post => this.createPostHTML(post)).join('');
+    }
+
+    // 投稿のHTMLを生成
+    createPostHTML(post) {
+        const date = new Date(post.date);
+        const formattedDate = date.toLocaleString('ja-JP', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+
+        const category = this.categories[post.category];
+
+        return `
+            <div class="post-card" data-id="${post.id}">
+                <div class="post-header">
+                    <div class="post-info">
+                        <h3>${this.escapeHtml(post.title)}</h3>
+                        <div class="post-meta">
+                            <span><i class="fas fa-user"></i> ${this.escapeHtml(post.name)}</span>
+                            <span><i class="fas fa-clock"></i> ${formattedDate}</span>
+                            <span class="post-category">${category.emoji} ${category.name}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="post-content">
+                    ${this.escapeHtml(post.message).replace(/\n/g, '<br>')}
+                </div>
+                <div class="post-actions">
+                    <button class="btn btn-danger btn-small" onclick="vegetableCommunity.confirmDelete(${post.id})">
+                        <i class="fas fa-trash"></i> 削除
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+
+    // 削除確認
+    confirmDelete(id) {
+        this.pendingDeleteId = id;
+        const post = this.posts.find(p => p.id === id);
+        const message = `「${post.title}」を削除しますか？`;
+        
+        document.getElementById('confirmMessage').textContent = message;
+        document.getElementById('confirmModal').style.display = 'block';
+    }
+
+    // 削除実行
+    executeDelete() {
+        if (this.pendingDeleteId) {
+            this.deletePost(this.pendingDeleteId);
+            this.pendingDeleteId = null;
+        }
+        this.closeModal();
+    }
+
+    // モーダルを閉じる
+    closeModal() {
+        document.getElementById('confirmModal').style.display = 'none';
+    }
+
+    // ローカルストレージに保存
+    saveToLocalStorage() {
+        localStorage.setItem('vegetableCommunityPosts', JSON.stringify(this.posts));
+    }
+
+    // HTMLエスケープ
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // イベントリスナーを設定
+    setupEventListeners() {
+        // フォーム送信
+        document.getElementById('postForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.handleFormSubmit();
+        });
+
+        // モーダルの外側をクリックして閉じる
+        document.getElementById('confirmModal').addEventListener('click', (e) => {
+            if (e.target.id === 'confirmModal') {
+                this.closeModal();
+            }
+        });
+
+        // ESCキーでモーダルを閉じる
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                this.closeModal();
+            }
+        });
+    }
+
+    // フォーム送信処理
+    handleFormSubmit() {
+        const form = document.getElementById('postForm');
+        const formData = new FormData(form);
+        
+        const name = formData.get('name');
+        const title = formData.get('title');
+        const category = formData.get('category');
+        const message = formData.get('message');
+
+        if (!name || !title || !category || !message) {
+            this.showNotification('🌱 すべての項目を入力してください', 'error');
+            return;
+        }
+
+        // 投稿ボタンをローディング状態にする
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<div class="loading"></div> 投稿中...';
+        submitBtn.disabled = true;
+
+        // 投稿処理（シミュレーション）
+        setTimeout(() => {
+            this.addPost(name, title, category, message);
+            form.reset();
+            
+            // ボタンを元に戻す
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        }, 1000);
+    }
+
+    // 通知を表示
+    showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = 'notification';
+        notification.innerHTML = `
+            <i class="fas fa-${type === 'success' ? 'check-circle' : 'info-circle'}"></i>
+            <span>${message}</span>
+        `;
+        
+        // 通知のスタイルを設定
+        const bgColor = type === 'success' ? 'linear-gradient(45deg, #4CAF50, #8BC34A)' : 
+                       type === 'error' ? 'linear-gradient(45deg, #f44336, #e91e63)' :
+                       'linear-gradient(45deg, #2196F3, #03A9F4)';
+        
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: ${bgColor};
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            z-index: 3000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        `;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.style.transform = 'translateX(0)';
+        }, 100);
+        
+        setTimeout(() => {
+            notification.style.transform = 'translateX(400px)';
+            setTimeout(() => {
+                document.body.removeChild(notification);
+            }, 300);
+        }, 3000);
+    }
+}
+
+// グローバル関数
+function clearForm() {
+    document.getElementById('postForm').reset();
+    vegetableCommunity.showNotification('🧹 フォームをクリアしました', 'info');
+}
+
+function sortPosts(type) {
+    vegetableCommunity.sortPosts(type);
+}
+
+function clearAllPosts() {
+    if (vegetableCommunity.posts.length === 0) {
+        vegetableCommunity.showNotification('🌱 削除する投稿がありません', 'info');
+        return;
+    }
+    
+    vegetableCommunity.pendingDeleteId = 'all';
+    document.getElementById('confirmMessage').textContent = 'すべての投稿を削除しますか？この操作は取り消せません。';
+    document.getElementById('confirmModal').style.display = 'block';
+}
+
+function confirmDelete() {
+    if (vegetableCommunity.pendingDeleteId === 'all') {
+        vegetableCommunity.clearAllPosts();
+        vegetableCommunity.pendingDeleteId = null;
+    } else {
+        vegetableCommunity.executeDelete();
+    }
+}
+
+function closeModal() {
+    vegetableCommunity.closeModal();
+}
+
+// 初期化
+let vegetableCommunity;
+
+document.addEventListener('DOMContentLoaded', () => {
+    vegetableCommunity = new VegetableCommunity();
+    
+    // 初期通知
+    setTimeout(() => {
+        vegetableCommunity.showNotification('🥕 野菜交流サイトへようこそ！', 'success');
+    }, 1000);
+});
+
+// 家庭菜園ガイドのタブ機能
+function showTab(tabName) {
+    // すべてのタブパネルを非表示
+    const tabPanels = document.querySelectorAll('.tab-panel');
+    tabPanels.forEach(panel => {
+        panel.classList.remove('active');
+    });
+    
+    // すべてのタブボタンからアクティブクラスを削除
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    tabButtons.forEach(button => {
+        button.classList.remove('active');
+    });
+    
+    // 選択されたタブパネルを表示
+    const selectedPanel = document.getElementById(tabName);
+    if (selectedPanel) {
+        selectedPanel.classList.add('active');
+    }
+    
+    // 選択されたタブボタンにアクティブクラスを追加
+    const selectedButton = event.target;
+    if (selectedButton) {
+        selectedButton.classList.add('active');
+    }
+} 
